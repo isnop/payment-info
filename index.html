@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Payment Information</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --card-hover: #212432;
+    --border: #2a2e3d;
+    --text: #e6e8ee;
+    --muted: #8b90a3;
+    --accent: #6c8cff;
+    --accent-glow: rgba(108, 140, 255, 0.15);
+    --green: #4ade80;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    padding: max(24px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(64px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+    line-height: 1.5;
+    background-image: radial-gradient(circle at 50% 0%, rgba(108,140,255,0.08), transparent 50%);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* LANG TOGGLE */
+  .top-bar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+  }
+
+  .lang-toggle {
+    display: inline-flex;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 2px;
+  }
+
+  .lang-toggle button {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+
+  .lang-toggle button:hover { color: var(--text); }
+  .lang-toggle button.active {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(108, 140, 255, 0.35);
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  header h1 {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+
+  header h1 .gradient {
+    background: linear-gradient(135deg, #6c8cff, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  header p {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  /* SECTIONS & GRID */
+  .section { margin-bottom: 32px; }
+
+  .section-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+    padding-left: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    align-items: start;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  @media (hover: hover) {
+    .card:hover {
+      background: var(--card-hover);
+      border-color: rgba(108, 140, 255, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px -8px var(--accent-glow);
+    }
+  }
+
+  .card-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    flex-shrink: 0;
+  }
+
+  .value-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    min-width: 0;
+  }
+
+  .value {
+    flex: 1;
+    min-width: 0;
+    font-family: "SF Mono", "Consolas", "Monaco", monospace;
+    font-size: 0.85rem;
+    color: var(--text);
+    word-break: break-all;
+    overflow-wrap: anywhere;
+    letter-spacing: 0.01em;
+  }
+
+  .copy-btn {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+  }
+
+  .copy-btn:hover {
+    color: var(--accent);
+    background: rgba(108, 140, 255, 0.1);
+  }
+
+  .copy-btn.copied { color: var(--green); }
+  .copy-btn svg { width: 16px; height: 16px; }
+
+  .divider-or {
+    text-align: center;
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin: 8px 0;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .divider-or::before,
+  .divider-or::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ============ QRIS STYLING ============ */
+  .qris-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  .qris-container {
+    background: #ffffff;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  .qris-img {
+    width: 100%;
+    max-width: 260px;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+  }
+
+  .qris-note {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  /* ==================================== */
+
+  /* NOTICE */
+  .notice {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.08), rgba(251, 146, 60, 0.05));
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin-top: 40px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .notice-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(251, 191, 36, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fbbf24;
+    flex-shrink: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+
+  .notice-content h3 {
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #fbbf24;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+
+  .notice-content p {
+    font-size: 0.9rem;
+    color: #d1d5db;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 48px;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: max(24px, env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 100;
+    max-width: calc(100vw - 32px);
+    white-space: nowrap;
+  }
+
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+
+  .toast svg {
+    color: var(--green);
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+
+  /* RESPONSIVE POLISH */
+  @media (max-width: 480px) {
+    .grid { grid-template-columns: 1fr; }
+    .value { font-size: 0.78rem; }
+    header h1 { font-size: 1.35rem; }
+    .copy-btn { padding: 12px; margin: -6px -6px -6px 0; }
+    .copy-btn svg { width: 18px; height: 18px; }
+  }
+
+  @media (max-width: 360px) {
+    .value { font-size: 0.72rem; }
+    .card { padding: 14px; }
+    .value-row { padding: 8px 10px; }
+    .lang-toggle button { padding: 5px 10px; font-size: 0.66rem; }
+  }
+
+  @media (max-height: 500px) and (orientation: landscape) {
+    body { padding-top: 12px; padding-bottom: 24px; }
+    header { margin-bottom: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- LANG TOGGLE -->
+  <div class="top-bar">
+    <div class="lang-toggle">
+      <button data-lang="id" onclick="setLang('id')" class="active">ID</button>
+      <button data-lang="en" onclick="setLang('en')">EN</button>
+    </div>
+  </div>
+
+  <header>
+    <h1>
+      <span data-id="Informasi" data-en="Payment">Informasi</span>
+      <span class="gradient" data-id="Pembayaran" data-en="Information">Pembayaran</span>
+    </h1>
+    <p data-id="Silakan pilih metode pembayaran yang tersedia" data-en="Please choose an available payment method">Silakan pilih metode pembayaran yang tersedia</p>
+  </header>
+
+  <!-- QRIS (TAMBAHAN BARU) -->
+  <section class="section">
+    <div class="section-title">QRIS</div>
+    <div class="card qris-card">
+      <div class="qris-container">
+        <!-- GANTI LINK DI BAWAH INI DENGAN LINK GAMBAR QRIS KAMU -->
+        <img src="https://i.imgur.com/MVzUkNJ.jpeg" alt="QRIS Payment" class="qris-img">
+      </div>
+      <p class="qris-note" 
+         data-id="Scan menggunakan aplikasi e-wallet atau mobile banking" 
+         data-en="Scan using any e-wallet or mobile banking app">
+         Scan menggunakan aplikasi e-wallet atau mobile banking
+      </p>
+    </div>
+  </section>
+
+  <!-- E-WALLET -->
+  <section class="section">
+    <div class="section-title">E-Wallet</div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-name"><span class="dot"></span>DANA</div>
+        <div class="value-row">
+          <span class="value" data-copy="085864444446">085864444446</span>
+          <button class="copy-btn" onclick="copyValue(this)" aria-label="Copy DANA">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="9" y="9" width="13" height="13" rx="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-name"><span class="dot"></span>GOPAY</div>
+        <div class="value-row">
+          <span class="value" data-copy="085864444446">085864444446</span>
+          <button class="copy-btn" onclick="copyValue(this)" aria-label="Copy GoPay">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="9" y="9" width="13" height="13" rx="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BANK TRANSFER -->
+  <section class="section">
+    <div class="section-title">Bank Transfer</div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-name"><span class="dot"></span>SEABANK</div>
+        <div class="value-row">
+          <span class="value" data-copy="901951813379">901951813379</span>
+          <button class="copy-btn" onclick="copyValue(this)" aria-label="Copy SeaBank">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="9" y="9" width="13" height="13" rx="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-name"><span class="dot"></span>BLU BCA</div>
+        <div class="value-row">
+          <span class="value" data-copy="008959265889">008959265889</span>
+          <button class="copy-btn" onclick="copyValue(this)" aria-label="Copy blu BCA">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="9" y="9" width="13" height="13" rx="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CRYPTO -->
+  <section class="section">
+    <div class="section-title">Crypto</div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-name"><span class="dot"></span>TON</div>
+        <div class="value-row">
+          <span class="value" data-copy="UQD-3sywPb2N_NSY5B24I9uxKN8gR_C0qgHoM49sYSAt2wKD">UQD-3sywPb2N_NSY5B24I9uxKN8gR_C0qgHoM49sYSAt2wKD</span>
+          <button class="copy-btn" onclick="copyValue(this)" aria-label="Copy TON">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="9" y="9" width="13" height="13" rx="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          </button>
+        </div>
+        <div class="divider-or" data-id="atau" data-en="or">atau</div>
+        <div class="value-row">
+          <span class="value" data-copy="nifzz.t.me">nifzz.t.me</span>
+          <button class="copy-btn" onclick="copyValue(this)" aria-label="Copy TON alias">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="9" y="9" width="13" height="13" rx="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-name"><span class="dot"></span>BINANCE ID</div>
+        <div class="value-row">
+          <span class="value" data-copy="1222376113">1222376113</span>
+          <button class="copy-btn" onclick="copyValue(this)" aria-label="Copy Binance ID">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="9" y="9" width="13" height="13" rx="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-name"><span class="dot"></span>USDT BEP20</div>
+        <div class="value-row">
+          <span class="value" data-copy="0x8ea12227bc4e288dc57a1dcacbca3ddb1dd3ebd9">0x8ea12227bc4e288dc57a1dcacbca3ddb1dd3ebd9</span>
+          <button class="copy-btn" onclick="copyValue(this)" aria-label="Copy USDT BEP20">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="9" y="9" width="13" height="13" rx="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-name"><span class="dot"></span>USDT TRC20</div>
+        <div class="value-row">
+          <span class="value" data-copy="TKQJAhdmBtiKicHkZx7VyYRndD5PC3SKBy">TKQJAhdmBtiKicHkZx7VyYRndD5PC3SKBy</span>
+          <button class="copy-btn" onclick="copyValue(this)" aria-label="Copy USDT TRC20">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="9" y="9" width="13" height="13" rx="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NOTICE -->
+  <div class="notice">
+    <div class="notice-icon">!</div>
+    <div class="notice-content">
+      <h3 data-id="Pemberitahuan Pembayaran" data-en="Payment Notice">Pemberitahuan Pembayaran</h3>
+      <p data-id="Wajib mengirimkan bukti transfer kepada penjual setelah melakukan pembayaran."
+         data-en="Must send proof of transfer to the seller after completing the transaction.">
+        Wajib mengirimkan bukti transfer kepada penjual setelah melakukan pembayaran.
+      </p>
+    </div>
+  </div>
+
+  <footer>
+    <span data-id="Terima kasih atas kepercayaan Anda" data-en="Thank you for your trust">Terima kasih atas kepercayaan Anda</span>
+  </footer>
+</div>
+
+<div class="toast" id="toast">
+  <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+  <span id="toastText">Tersalin ke clipboard</span>
+</div>
+
+<script>
+  const toastMessages = { id: 'Tersalin ke clipboard', en: 'Copied to clipboard' };
+  let currentLang = 'id';
+
+  function setLang(lang) {
+    currentLang = lang;
+    document.querySelectorAll('[data-id][data-en]').forEach(el => {
+      el.textContent = el.dataset[lang];
+    });
+    document.querySelectorAll('.lang-toggle button').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.lang === lang);
+    });
+    document.documentElement.lang = lang;
+    document.getElementById('toastText').textContent = toastMessages[lang];
+    try { localStorage.setItem('paymentLang', lang); } catch (e) {}
+  }
+
+  (function initLang() {
+    let saved = 'id';
+    try { saved = localStorage.getItem('paymentLang') || 'id'; } catch (e) {}
+    setLang(saved);
+  })();
+
+  let toastTimer;
+  function copyValue(btn) {
+    const value = btn.previousElementSibling.dataset.copy;
+    const showCopied = () => {
+      btn.classList.add('copied');
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = '<svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
+      showToast();
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.innerHTML = originalHTML;
+      }, 1800);
+    };
+
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(value).then(showCopied).catch(fallbackCopy);
+    } else {
+      fallbackCopy();
+    }
+
+    function fallbackCopy() {
+      const ta = document.createElement('textarea');
+      ta.value = value;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); showCopied(); }
+      catch (e) { alert('Copy gagal: ' + value); }
+      document.body.removeChild(ta);
+    }
+  }
+
+  function showToast() {
+    const toast = document.getElementById('toast');
+    clearTimeout(toastTimer);
+    toast.classList.add('show');
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+</script>
+
+</body>
+</html>
